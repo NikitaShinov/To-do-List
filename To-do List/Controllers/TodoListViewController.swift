@@ -11,11 +11,14 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
         let newItem = Item()
         newItem.name = "Find Mike"
         itemArray.append(newItem)
@@ -28,9 +31,9 @@ class TodoListViewController: UITableViewController {
         newItem3.name = "Find Bill"
         itemArray.append(newItem3)
         
-        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
-            itemArray = items
-        }
+//        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
+//            itemArray = items
+//        }
     }
     
     //MARK: - Tableview Datasource
@@ -53,7 +56,7 @@ class TodoListViewController: UITableViewController {
         
         itemArray[indexPath.row].isDone = !itemArray[indexPath.row].isDone
         
-        tableView.reloadData()
+        saveItems()
         
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -65,17 +68,16 @@ class TodoListViewController: UITableViewController {
         var textField = UITextField()
         
         let alert = UIAlertController(title: "Add new item", message: "", preferredStyle: .alert)
-        let addAction = UIAlertAction(title: "Add item", style: .default) { [weak self] action in
+        let addAction = UIAlertAction(title: "Add item", style: .default) { action in
             //What will happen after user taps to add
             guard let newTask = textField.text else { return }
             let newItem = Item()
             newItem.name = newTask
             
-            self?.itemArray.append(newItem)
+            self.itemArray.append(newItem)
             
-            self?.defaults.set(self?.itemArray, forKey: "ToDoListArray")
+            self.saveItems()
             
-            self?.tableView.reloadData()
         }
         alert.addTextField { alertTextField in
             alertTextField.placeholder = "Create new item"
@@ -83,6 +85,20 @@ class TodoListViewController: UITableViewController {
         }
         alert.addAction(addAction)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func saveItems () {
+        let encoder = PropertyListEncoder()
+        
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            guard let filePath = dataFilePath else { return }
+            try data.write(to: filePath)
+        } catch {
+            print("Error, \(error)")
+        }
+        self.tableView.reloadData()
     }
     
 }
