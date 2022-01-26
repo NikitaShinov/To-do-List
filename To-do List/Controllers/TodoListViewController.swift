@@ -19,17 +19,7 @@ class TodoListViewController: UITableViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        let newItem = Item()
-        newItem.name = "Find Mike"
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.name = "Find Stan"
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.name = "Find Bill"
-        itemArray.append(newItem3)
+        loadItems()
         
 //        if let items = defaults.array(forKey: "ToDoListArray") as? [Item] {
 //            itemArray = items
@@ -79,11 +69,13 @@ class TodoListViewController: UITableViewController {
             self.saveItems()
             
         }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addTextField { alertTextField in
             alertTextField.placeholder = "Create new item"
             textField = alertTextField
         }
         alert.addAction(addAction)
+        alert.addAction(cancelAction)
         present(alert, animated: true, completion: nil)
     }
     
@@ -99,6 +91,19 @@ class TodoListViewController: UITableViewController {
             print("Error, \(error)")
         }
         self.tableView.reloadData()
+    }
+    
+    func loadItems() {
+        guard let filePath = dataFilePath else { return }
+        if let data = try? Data(contentsOf: filePath) {
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print ("Error, \(error)")
+            }
+            
+        }
     }
     
 }
