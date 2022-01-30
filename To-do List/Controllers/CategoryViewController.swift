@@ -39,7 +39,7 @@ class CategoryViewController: UITableViewController {
         }
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addTextField { alertTextField in
-            alertTextField.placeholder = "Create new item"
+            alertTextField.placeholder = "Create new category"
             textField = alertTextField
         }
         alert.addAction(addAction)
@@ -47,13 +47,16 @@ class CategoryViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
         
         }
+    
+    //MARK: - Data Manipulation methods
+    
     func saveCategories() {
         do {
             try context.save()
         } catch {
             print ("Error saving context \(error)")
         }
-        self.tableView.reloadData()
+        tableView.reloadData()
     }
     
     func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()) {
@@ -78,6 +81,15 @@ class CategoryViewController: UITableViewController {
         cell.textLabel?.text = category.name
         
         return cell
+    }
+    // MARK: - Table view delegate methods
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "goToItems", sender: self)
+    }
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        guard let destinationVC = segue.destination as? TodoListViewController else { return }
+        guard let indexPath = tableView.indexPathForSelectedRow else { return }
+        destinationVC.selectedCategory = categories[indexPath.row]
     }
     
 }
